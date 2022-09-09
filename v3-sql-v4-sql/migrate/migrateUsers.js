@@ -28,7 +28,7 @@ async function migrateUserPermissions() {
   );
   await dbV4(destinationLinks).del();
   await dbV4(destination).del();
-  for (var page = 0; page * BATCH_SIZE < count; page++) {
+  for (var page = 0; page * +BATCH_SIZE < count; page++) {
     console.log(`${source} batch #${page + 1}`);
     const items = await sourceSelect
       .clone()
@@ -60,23 +60,39 @@ async function migrateUsersData() {
   const count =
     (await dbV3(source).count().first()).count ||
     (await dbV3(source).clone().count().first())["count(*)"];
-  console.log(`Migrating ${count} items from ${source} to ${destination}`);
-  await dbV4(destinationLinks).del();
-  await dbV4(destination).del();
+   console.log(`Migrating ${count} items from ${source} to ${destination}`);
+
+   // These should probably check if that table exists before attempting to delete. If this fails, it means the content-type schema on users/roles was not migrated over correctly 
+   await dbV4(destinationLinks).del(); 
+    await dbV4(destination).del();
+
   for (var page = 0; page * BATCH_SIZE < count; page++) {
     console.log(`${source} batch #${page + 1}`);
     const items = await dbV3(source)
       .limit(BATCH_SIZE)
       .offset(page * BATCH_SIZE);
-    const migratedItems = migrateItems(items, ({ role, ...item }) =>
+
+    const migratedItems = migrateItems(items, ({ role, default_region, ...item }) =>
       migrateItem(item)
     );
-    const roleLinks = items.map((item) => ({
+
+    const roleLinks = items.map((item) =>{
+      console.log('Linking user: ',item.id,' to role: ', item.role)
+      return {
       user_id: item.id,
       role_id: item.role,
-    }));
+    }})
+
+    const defaultRegionLinks = items.map((item) =>{
+      console.log('Linking user: ',item.id,' to default region: ', item.default_region)
+      return {
+      user_id: item.id,
+      region_id: item.default_region,
+    }})
+
     await dbV4(destination).insert(migratedItems);
     await dbV4(destinationLinks).insert(roleLinks);
+    await dbV4('up_users_default_region_links').insert(defaultRegionLinks);
   }
   await resetTableSequence(destination);
 }
