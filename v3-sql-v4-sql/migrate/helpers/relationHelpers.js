@@ -12,9 +12,10 @@ const { migrateItem } = require("./migrateFields");
 const { omit } = require("lodash");
 
 function addRelation(
-  { uid, model, attribute, type, modelF = undefined, attributeF = undefined },
+  { uid, model, attribute, type, modelF = undefined, attributeF = undefined ,via},
   relations
 ) {
+  
   const entitUid = uid.split(".");
 
   const entityName = snakeCase(entitUid[entitUid.length - 1]);
@@ -25,7 +26,7 @@ function addRelation(
     type,
     modelF,
     attributeF,
-    table: `${model}_${snakeCase(attribute)}_links`,
+    table: `${ /\d/.test(model) ? snakeCase(model) :model}_${snakeCase(attribute)}_links`,
     entityName,
   });
 }
@@ -63,7 +64,7 @@ function processRelation({ key, value, collectionName, uid }, relations) {
           model: collectionName,
           attribute: key,
           type: "oneToMany",
-          modelF: value.collection,
+          modelF: snakeCase(value.collection),
           attributeF: value.via,
         },
         relations
@@ -141,7 +142,7 @@ async function migrateManyToManyRelation(relation, sourceTable) {
 
 async function migrateRelations(tables, relations) {
   let v4Tables = [];
-
+const relationshiptTables = relations.map(r=>r.table)
   if (isPGSQL) {
     v4Tables = (
       await dbV4("information_schema.tables")
@@ -162,13 +163,20 @@ async function migrateRelations(tables, relations) {
     ).map((row) => row.table_name);
   }
 
-  relations = relations.filter((r) => v4Tables.includes(r.table));
+  const filteredRelations = relations.filter((r) => v4Tables.includes(r.table));
+  const missingRelations = relations.filter((r) => !v4Tables.includes(r.table));
 
   const v3RelationTables = tables.filter((t) => t.includes("__"));
 
-  for (const relation of relations) {
+  for (const relation of filteredRelations) {
     if (relation.type === "oneToOne") {
-      await migrateOneToOneRelation(relation);
+      try {
+
+        await migrateOneToOneRelation(relation);
+      } catch (err){
+        console.log(relation)
+        console.log(err)
+      }
     } else if (relation.type === "manyToMany") {
       var sourceTable = v3RelationTables.find(
         (t) =>
@@ -183,6 +191,8 @@ async function migrateRelations(tables, relations) {
       if (sourceTable) {
         await migrateManyToManyRelation(relation, sourceTable);
       }
+    } else {
+      console.log('Are these getting migrated??')
     }
   }
 }
