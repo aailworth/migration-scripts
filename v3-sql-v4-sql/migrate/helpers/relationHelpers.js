@@ -15,7 +15,7 @@ function addRelation(
   { uid, model, attribute, type, modelF = undefined, attributeF = undefined ,via},
   relations
 ) {
-  
+  console.log(uid,`${snakeCase(model)}_${snakeCase(attribute)}_links`)
   const entitUid = uid.split(".");
 
   const entityName = snakeCase(entitUid[entitUid.length - 1]);
@@ -26,7 +26,7 @@ function addRelation(
     type,
     modelF,
     attributeF,
-    table: `${ /\d/.test(model) ? snakeCase(model) :model}_${snakeCase(attribute)}_links`,
+    table: `${snakeCase(model)}_${snakeCase(attribute)}_links`,
     entityName,
   });
 }
