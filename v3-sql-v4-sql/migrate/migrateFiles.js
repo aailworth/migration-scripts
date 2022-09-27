@@ -3,7 +3,8 @@ const { omit } = require("lodash");
 const { snakeCase } = require("lodash/fp");
 const { dbV3 } = require("../config/database");
 const { migrateUids } = require("./helpers/migrateValues");
-
+const pluralize = require('pluralize');
+const { singular } = pluralize;
 const processedTables = ["upload_file", "upload_file_morph"];
 const newTables = ["files", "files_related_morphs"];
 
@@ -20,10 +21,15 @@ async function migrateTables() {
   const componentsMap = modelsDefs
     .map((item) => JSON.parse(item.value))
     .reduce(
-      (acc, item) => ({
+      (acc, item) => {
+        if(item.uid.startsWith("application::")){
+          const singularUid = singular(item.collectionName)
+          item.uid = `api::${singularUid}.${singularUid}` 
+        }
+        return {
         ...acc,
         [item.collectionName]: migrateUids(item.uid),
-      }),
+      }},
       {}
     );
 
@@ -35,7 +41,7 @@ async function migrateTables() {
       }),
       {}
     );
-
+    
     const newItem = {
       ...withRenamedKeys,
       created_by_id: item.created_by,
