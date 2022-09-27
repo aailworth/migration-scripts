@@ -4,6 +4,38 @@ const {singular} = pluralize
 
 function mapAction(action) {
   switch (action) {
+//start KYZEN Custom actions
+    case "deletedoc":
+          return "deleteDoc";
+    case "getinfos":
+          return "getInfos";
+    case "loginview":
+          return "loginView";
+    case "regeneratedoc":
+          return "regenerateDoc";
+    case "dropdownall":
+          return "dropdownAll";
+    case "labelreport":
+          return "labelReport";
+    case "createlocalization":
+          return "createLocalization";
+    case "limitedaccess":
+          return "limitedAccess";
+    case "updateme":
+          return "updateMe";
+    case "dropdownkyzen":
+          return "dropdownKYZEN"; 
+    case "createmultiple":
+          return "createMultiple";
+    case "datasetaccess":
+          return "datasetAccess";
+    case "pcsdatasetfile":
+          return "pcsDatasetFile";
+    case "processdataset":
+          return "processDataset";
+    case "converttodraft":
+          return "convertToDraft";
+//end KYZEN Custom actions
     case "findone":
       return "findOne";
     case "bulkdelete":
