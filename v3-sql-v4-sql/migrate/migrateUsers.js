@@ -100,6 +100,7 @@ async function migrateUsersData() {
 async function migrateTables() {
   console.log("Migrating Users");
   await migrate("users-permissions_role", "up_roles");
+  await migrate("apps_roles__roles_apps", "up_roles_apps_links");
   await migrateUserPermissions();
   await migrateUsersData();
 }
