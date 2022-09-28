@@ -27,6 +27,8 @@ const migrations = [
 
 async function migrate() {
   if (isPGSQL) {
+    await dbV3.raw("SET search_path TO strapiv3");
+    await dbV4.raw("SET search_path TO strapiv4");
     await dbV4.raw("set session_replication_role to replica;");
   }
 
@@ -39,7 +41,7 @@ async function migrate() {
     tables = (
       await dbV3("information_schema.tables")
         .select("table_name")
-        .where("table_schema", "public")
+        .where("table_schema", "strapiv3")
     ).map((row) => row.table_name);
   }
 

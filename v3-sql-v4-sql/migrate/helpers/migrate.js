@@ -70,7 +70,7 @@ async function migrate(source, destination, itemMapper = undefined) {
       (
         await dbV3("information_schema.tables")
           .select("table_name")
-          .where("table_schema", "public")
+          .where("table_schema", "strapiv3")
           .where("table_name", source)
       ).length === 0;
 
@@ -78,7 +78,7 @@ async function migrate(source, destination, itemMapper = undefined) {
       (
         await dbV4("information_schema.tables")
           .select("table_name")
-          .where("table_schema", "public")
+          .where("table_schema", "strapiv4")
           .where("table_name", destination)
       ).length === 0;
 
@@ -162,7 +162,7 @@ async function resetTableSequence(destination) {
     if (hasId) {
       const seq = `${destination.slice(0, 56)}_id_seq`;
       await dbV4.raw(
-        `SELECT SETVAL ('${seq}', (SELECT MAX(id) + 1 FROM ${destination}))`
+        `SELECT SETVAL ('${seq}', (SELECT MAX(id) + 1 FROM "${destination}"))`
       );
     }
   }

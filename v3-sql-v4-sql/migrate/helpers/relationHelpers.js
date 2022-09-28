@@ -147,7 +147,7 @@ const relationshiptTables = relations.map(r=>r.table)
     v4Tables = (
       await dbV4("information_schema.tables")
         .select("table_name")
-        .where("table_schema", "public")
+        .where("table_schema", "strapiv4")
     ).map((row) => row.table_name);
   }
 

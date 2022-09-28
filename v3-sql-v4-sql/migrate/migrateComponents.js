@@ -51,7 +51,7 @@ async function migrateTables(tables) {
     componentRelationsTables = (
       await dbV3("information_schema.tables")
         .select("table_name")
-        .where("table_schema", "public")
+        .where("table_schema", "strapiv3")
         .where("table_name", "like", "%_components")
     )
       .map((row) => row.table_name)
